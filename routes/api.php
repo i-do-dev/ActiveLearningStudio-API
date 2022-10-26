@@ -295,6 +295,10 @@ Route::group(['prefix' => 'v1', 'namespace' => 'Api\V1'], function () {
                 Route::post('projects/{project}/fetch', 'CurrikiGo\CourseController@fetchFromMoodle');
             });
 
+            Route::group(['prefix' => 'wordpress'], function () {
+                Route::post('projects/{project}/playlists/{playlist}/publish', 'CurrikiGo\PublishController@playlistToWordPress');
+            });
+
             // Specific routes for Safari Montage.
             Route::group(['prefix' => 'safarimontage'], function () {
                 Route::post('projects/{project}/playlists/{playlist}/activities/{activity}/publish',
