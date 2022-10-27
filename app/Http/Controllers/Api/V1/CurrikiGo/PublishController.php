@@ -9,6 +9,8 @@ namespace App\Http\Controllers\Api\V1\CurrikiGo;
 use App\CurrikiGo\Canvas\Client;
 use App\CurrikiGo\Canvas\Playlist as CanvasPlaylist;
 use App\CurrikiGo\Moodle\Playlist as MoodlePlaylist;
+use App\CurrikiGo\WordPress\Course as WordPressCourse;
+use App\CurrikiGo\WordPress\Lesson as WordPressLesson;
 use App\CurrikiGo\SafariMontage\EasyUpload as SafariMontageEasyUpload;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\V1\CurrikiGo\PublishPlaylistRequest;
@@ -256,6 +258,90 @@ class PublishController extends Controller
                     'errors' => ['Failed to send playlist to Safari Montage.'],
                 ], 500);
             }
+        }
+
+        return response([
+            'errors' => ['You are not authorized to perform this action.'],
+        ], 403);
+    }
+
+    /**
+     * Publish Playlist to Wordpress
+     *
+     * Publish the specified playlist to Wordpress.
+     *
+     * @urlParam project required The Id of the project Example: 1
+     * @urlParam playlist required The Id of the playlist Example: 1
+     * @bodyParam setting_id int The Id of the LMS setting Example: 1
+     * @bodyParam counter int The counter for uniqueness of the title Example: 1
+     *
+     * @response 400 {
+     *   "errors": [
+     *     "Invalid project or playlist Id."
+     *   ]
+     * }
+     *
+     * @response 403 {
+     *   "errors": [
+     *     "You are not authorized to perform this action."
+     *   ]
+     * }
+     *
+     * @response 500 {
+     *   "errors": [
+     *     "Failed to send playlist to Wordpress."
+     *   ]
+     * }
+     *
+     * @param PublishPlaylistRequest $publishRequest
+     * @param Project $project
+     * @param Playlist $playlist
+     * @return Response
+     */
+    public function playlistToWordPress(PublishPlaylistRequest $publishRequest, Project $project, Playlist $playlist)
+    {
+        if ($playlist->project_id !== $project->id) {
+            return response([
+                'errors' => ['Invalid project or playlist Id.'],
+            ], 400);
+        }
+        $authUser = auth()->user();
+        $courseId = null;
+        if (Gate::forUser($authUser)->allows('publish-to-lms', $project)) {
+            $data = $publishRequest->validated();
+            $lmsSetting = $this->lmsSettingRepository->find($data['setting_id']);
+            $course = new WordPressCourse($lmsSetting);
+            $response = $course->fetch($playlist);
+            $responseContent = $response->getBody()->getContents();
+            $responseContent = json_decode($responseContent);
+            if(empty($responseContent)){
+                $response = $course->send($playlist);
+                $responseContent = $response->getBody()->getContents();
+                $responseContent = json_decode($responseContent);
+                $courseId = $responseContent->id;
+            }else{
+                $courseId = $responseContent[0]->id;
+                $response = $course->update($playlist, $courseId);
+            }
+            $Lesson = new WordPressLesson($lmsSetting);
+            $response = $Lesson->fetch($playlist);
+            $responseContent = $response->getBody()->getContents();
+            $responseContent = json_decode($responseContent);
+            if(empty($responseContent)){
+                $response = $Lesson->send($playlist, $courseId );
+            }else{
+                $response = $Lesson->update($playlist,  $courseId ,$responseContent[0]->id );
+            }
+            $code = $response->getStatusCode();
+            if ($code == 200 || $code == 201 ) {
+                $outcome = $response->getBody()->getContents();
+                return response([
+                    'data' => $outcome,
+                ], 200);
+            }
+            return response([
+                'errors' => ['Failed to send playlist to Wordpress.'],
+            ], 500);
         }
 
         return response([
