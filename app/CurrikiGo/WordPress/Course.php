@@ -18,7 +18,7 @@ class Course
     public function send(PlaylistModel $playlist)
     {        
         $lmsHost = $this->lmsSetting->lms_url;
-        $webServiceURL = $lmsHost . "/wp-json/wp/v2/tl_courses";
+        $webServiceURL = $lmsHost . "/wp-json/wp/v2/tl_courses"; // web service endpoint
         $requestParams = [
             "title" => $playlist->project->name,
             "status" => "publish",
