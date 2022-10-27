@@ -8,11 +8,13 @@ class Course
 {
     private $lmsSetting;
     private $client;
+    private $lmsAuthToken;
 
     public function __construct($lmsSetting)
     {
         $this->lmsSetting = $lmsSetting;
         $this->client = new \GuzzleHttp\Client();
+        $this->lmsAuthToken = base64_encode($lmsSetting->lms_login_id . ":" . $lmsSetting->lms_access_token);
     }
 
     public function send(PlaylistModel $playlist)
@@ -27,7 +29,7 @@ class Course
         ];
         $response = $this->client->request('POST', $webServiceURL, [
         'headers' => [
-            'Authorization' => "Basic  " . base64_encode($this->lmsSetting->lms_login_id . ":" . $this->lmsSetting->lms_access_token)
+            'Authorization' => "Basic  " . $this->lmsAuthToken
         ],
         'json' => $requestParams
         ]);
@@ -46,7 +48,7 @@ class Course
         ];
         $response = $this->client->request('POST', $webServiceURL, [
         'headers' => [
-            'Authorization' => "Basic  " . base64_encode($this->lmsSetting->lms_login_id . ":" . $this->lmsSetting->lms_access_token)
+            'Authorization' => "Basic  " . $this->lmsAuthToken
         ],
         'json' => $requestParams
         ]);
@@ -57,10 +59,11 @@ class Course
     {        
         $lmsHost = $this->lmsSetting->lms_url;
         $webServiceURL = $lmsHost . "/wp-json/wp/v2/tl_courses?meta_key=lti_content_id&meta_value=". $playlist->project->id;
-        $response = $this->client->request('GET', $webServiceURL);
+        $response = $this->client->request('GET', $webServiceURL, [
+            'headers' => [
+                'Authorization' => "Basic  " . $this->lmsAuthToken
+            ]
+        ]);
         return $response;
     }
-
-
-
 }
