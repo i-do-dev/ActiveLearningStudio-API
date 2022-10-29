@@ -24,7 +24,6 @@ class Course
         $requestParams = [
             "title" => $playlist->project->name,
             "status" => "publish",
-            "content" => "content",
             'meta' => array('lti_content_id' => $playlist->project->id)
         ];
         $response = $this->client->request('POST', $webServiceURL, [
@@ -43,7 +42,6 @@ class Course
         $requestParams = [
             "title" => $playlist->project->name,
             "status" => "publish",
-            "content" => "content",
             'meta' => array('lti_content_id' => $playlist->project->id)
         ];
         $response = $this->client->request('POST', $webServiceURL, [

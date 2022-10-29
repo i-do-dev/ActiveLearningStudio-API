@@ -25,7 +25,6 @@ class Lesson
         $requestParams = [
             "title" => $playlist->title . ($data['counter'] > 0 ? ' (' .$data['counter'] . ')' : ''),
             "status" => "publish",
-            "content" => "content",
             'meta' => array(
                 'lti_content_id' => $playlist->id,
                 'tl_course_id' => $course_id,
