@@ -323,15 +323,9 @@ class PublishController extends Controller
                 $courseId = $responseContent[0]->id;
                 $response = $course->update($playlist, $courseId);
             }
+            $counter = (isset($data['counter']) ? intval($data['counter']) : 0);
             $Lesson = new WordPressLesson($lmsSetting);
-            $response = $Lesson->fetch($playlist);
-            $responseContent = $response->getBody()->getContents();
-            $responseContent = json_decode($responseContent);
-            if(empty($responseContent)){
-                $response = $Lesson->send($playlist, $courseId );
-            }else{
-                $response = $Lesson->update($playlist,  $courseId ,$responseContent[0]->id );
-            }
+            $response = $Lesson->send($playlist, $courseId, ['counter' => intval($counter)]);
             $code = $response->getStatusCode();
             if ($code == 200 || $code == 201 ) {
                 $outcome = $response->getBody()->getContents();
