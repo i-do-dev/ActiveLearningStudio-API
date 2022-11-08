@@ -17,14 +17,14 @@ class Lesson
         $this->lmsAuthToken = base64_encode($lmsSetting->lms_login_id . ":" . $lmsSetting->lms_access_token);
     }
 
-    public function send(PlaylistModel $playlist, $course_id, $data)
+    public function send(PlaylistModel $playlist, $course_id, $data, $tagsArray)
     { 
-        // Add Grade level of first activity on project manifest
         $lmsHost = $this->lmsSetting->lms_url;
         $webServiceURL = $lmsHost . "/wp-json/wp/v2/tl_lesson";
         $requestParams = [
             "title" => $playlist->title . ($data['counter'] > 0 ? ' (' .$data['counter'] . ')' : ''),
             "status" => "publish",
+            "tl_lesson_tag" => $tagsArray,
             'meta' => array(
                 'lti_content_id' => $playlist->id,
                 'tl_course_id' => $course_id,
