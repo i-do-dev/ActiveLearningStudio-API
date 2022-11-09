@@ -11,6 +11,7 @@ use App\CurrikiGo\Canvas\Playlist as CanvasPlaylist;
 use App\CurrikiGo\Moodle\Playlist as MoodlePlaylist;
 use App\CurrikiGo\WordPress\Course as WordPressCourse;
 use App\CurrikiGo\WordPress\Lesson as WordPressLesson;
+use App\CurrikiGo\WordPress\Tags as WordPressTags;
 use App\CurrikiGo\SafariMontage\EasyUpload as SafariMontageEasyUpload;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\V1\CurrikiGo\PublishPlaylistRequest;
@@ -307,6 +308,7 @@ class PublishController extends Controller
         }
         $authUser = auth()->user();
         $courseId = null;
+        $tagsArray = [];
         if (Gate::forUser($authUser)->allows('publish-to-lms', $project)) {
             $data = $publishRequest->validated();
             $lmsSetting = $this->lmsSettingRepository->find($data['setting_id']);
@@ -314,18 +316,30 @@ class PublishController extends Controller
             $response = $course->fetch($playlist);
             $responseContent = $response->getBody()->getContents();
             $responseContent = json_decode($responseContent);
+            $wpTag = new WordPressTags($lmsSetting,'course');
+            $response = $wpTag->fetch($playlist);
+            $tags = $response->getBody()->getContents();
+            $tags = json_decode($tags);
+            $tagsArray = $wpTag->returnIds($playlist ,$tags);
             if(empty($responseContent)){
-                $response = $course->send($playlist);
+                $response = $course->send($playlist, $tagsArray);
                 $responseContent = $response->getBody()->getContents();
                 $responseContent = json_decode($responseContent);
                 $courseId = $responseContent->id;
             }else{
                 $courseId = $responseContent[0]->id;
-                $response = $course->update($playlist, $courseId);
+                $response = $course->update($playlist, $courseId, $tagsArray);
+                $responseContent = $response->getBody()->getContents();
+                $responseContent = json_decode($responseContent);
             }
+            $wpTag = new WordPressTags($lmsSetting,'lesson');
+            $response = $wpTag->fetch($playlist);
+            $tags = $response->getBody()->getContents();
+            $tags = json_decode($tags);
+            $tagsArray = $wpTag->returnIds($playlist ,$tags);
             $counter = (isset($data['counter']) ? intval($data['counter']) : 0);
-            $Lesson = new WordPressLesson($lmsSetting);
-            $response = $Lesson->send($playlist, $courseId, ['counter' => intval($counter)]);
+            $lesson = new WordPressLesson($lmsSetting);
+            $response = $lesson->send($playlist, $courseId, ['counter' => intval($counter)], $tagsArray);
             $code = $response->getStatusCode();
             if ($code == 200 || $code == 201 ) {
                 $outcome = $response->getBody()->getContents();
