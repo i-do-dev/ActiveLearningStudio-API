@@ -24,6 +24,7 @@ class Course
         $requestParams = [
             "title" => $playlist->project->name,
             "status" => "publish",
+            "content" => $playlist->project->description,
             'meta' => array('lti_content_id' => $playlist->project->id),
             'tl_course_tag' =>  $tagsArray
         ];
@@ -43,6 +44,7 @@ class Course
         $requestParams = [
             "title" => $playlist->project->name,
             "status" => "publish",
+            "content" => $playlist->project->description,
             'meta' => array('lti_content_id' => $playlist->project->id),
             'tl_course_tag' =>  $tagsArray
         ];
