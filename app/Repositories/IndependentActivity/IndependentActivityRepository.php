@@ -13,7 +13,6 @@ use App\Models\AuthorTag;
 use App\Repositories\H5pContent\H5pContentRepositoryInterface;
 use App\Repositories\IndependentActivity\IndependentActivityRepositoryInterface;
 use App\Repositories\BaseRepository;
-use App\Repositories\H5pElasticsearchField\H5pElasticsearchFieldRepositoryInterface;
 use App\Repositories\Subject\SubjectRepositoryInterface;
 use App\Repositories\EducationLevel\EducationLevelRepositoryInterface;
 use App\Http\Resources\V1\SearchPostgreSqlResource;
@@ -33,7 +32,6 @@ use RecursiveDirectoryIterator;
 
 class IndependentActivityRepository extends BaseRepository implements IndependentActivityRepositoryInterface
 {
-    private $h5pElasticsearchFieldRepository;
     private $subjectRepository;
     private $educationLevelRepository;
     private $client;
@@ -43,14 +41,12 @@ class IndependentActivityRepository extends BaseRepository implements Independen
      * IndependentActivityRepository constructor.
      *
      * @param IndependentActivity $model
-     * @param H5pElasticsearchFieldRepositoryInterface $h5pElasticsearchFieldRepository
      * @param SubjectRepositoryInterface $subjectRepository
      * @param EducationLevelRepositoryInterface $educationLevelRepository
      * @param H5pContentRepositoryInterface $h5pContentRepository
      */
     public function __construct(
         IndependentActivity $model,
-        H5pElasticsearchFieldRepositoryInterface $h5pElasticsearchFieldRepository,
         SubjectRepositoryInterface $subjectRepository,
         EducationLevelRepositoryInterface $educationLevelRepository,
         H5pContentRepositoryInterface $h5pContentRepository
@@ -58,7 +54,6 @@ class IndependentActivityRepository extends BaseRepository implements Independen
     {
         parent::__construct($model);
         $this->client = new \GuzzleHttp\Client();
-        $this->h5pElasticsearchFieldRepository = $h5pElasticsearchFieldRepository;
         $this->subjectRepository = $subjectRepository;
         $this->educationLevelRepository = $educationLevelRepository;
         $this->h5pContentRepository = $h5pContentRepository;
@@ -106,6 +101,7 @@ class IndependentActivityRepository extends BaseRepository implements Independen
         $queryParams['query_education'] = '';
         $queryParams['query_tags'] = '';
         $queryParams['query_h5p'] = '';
+        $queryParams['query_h5p_version'] = false;
         $queryFrom = 0;
         $querySize = 10;
 
@@ -121,11 +117,11 @@ class IndependentActivityRepository extends BaseRepository implements Independen
         }
 
         if ($authUser) {
-            $query = 'SELECT * FROM advindependentactivitysearch(:query_text, :query_subject, :query_education, :query_tags, :query_h5p)';
-            $countsQuery = 'SELECT COUNT(*) AS total FROM advindependentactivitysearch(:query_text, :query_subject, :query_education, :query_tags, :query_h5p)';
+            $query = 'SELECT * FROM advindependentactivitysearch(:query_text, :query_subject, :query_education, :query_tags, :query_h5p, :query_h5p_version)';
+            $countsQuery = 'SELECT COUNT(*) AS total FROM advindependentactivitysearch(:query_text, :query_subject, :query_education, :query_tags, :query_h5p, :query_h5p_version)';
         } else {
-            $query = 'SELECT * FROM advindependentactivitysearch(:query_text, :query_subject, :query_education, :query_tags, :query_h5p)';
-            $countsQuery = 'SELECT COUNT(*) AS total FROM advindependentactivitysearch(:query_text, :query_subject, :query_education, :query_tags, :query_h5p)';
+            $query = 'SELECT * FROM advindependentactivitysearch(:query_text, :query_subject, :query_education, :query_tags, :query_h5p, :query_h5p_version)';
+            $countsQuery = 'SELECT COUNT(*) AS total FROM advindependentactivitysearch(:query_text, :query_subject, :query_education, :query_tags, :query_h5p, :query_h5p_version)';
         }
 
         $queryWhere[] = "deleted_at IS NULL";
@@ -184,6 +180,9 @@ class IndependentActivityRepository extends BaseRepository implements Independen
 
                     $privateOrganizationIdsQueries = implode(' AND ', $privateOrganizationIdsQueries);
                     $organizationIdsShouldQueries[] = "(" . $privateOrganizationIdsQueries . ")";
+
+                    // Consider H5P version while filtering
+                    $queryParams['query_h5p_version'] = true;
                 }
 
                 $organizationIdsShouldQueries = implode(' OR ', $organizationIdsShouldQueries);
@@ -1122,16 +1121,17 @@ class IndependentActivityRepository extends BaseRepository implements Independen
      */
     public function moveToPlaylist($independentActivity, $playlist, $token)
     {
-        $newThumbUrl = cloneIndependentActivityThumbnail($independentActivity->thumb_url, "independent-activities", "activities");
+        //$newThumbUrl = cloneIndependentActivityThumbnail($independentActivity->thumb_url, "independent-activities", "activities");
 
         $activity_data = [
             'title' => $independentActivity->title,
+            'description' => $independentActivity->description,
             'type' => $independentActivity->type,
             'content' => $independentActivity->content,
             'playlist_id' => $playlist->id,
             'order' => $this->getOrder($playlist->id) + 1,
             'h5p_content_id' => $independentActivity->h5p_content_id, // Move the content
-            'thumb_url' => $newThumbUrl,
+            'thumb_url' => $independentActivity->thumb_url,
             'shared' => $playlist->project->shared,
         ];
 

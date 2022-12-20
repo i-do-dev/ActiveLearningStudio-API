@@ -6,6 +6,10 @@ use App\Repositories\Activity\ActivityRepository;
 use App\Repositories\Activity\ActivityRepositoryInterface;
 use App\Repositories\IndependentActivity\IndependentActivityRepository;
 use App\Repositories\IndependentActivity\IndependentActivityRepositoryInterface;
+use App\Repositories\UiOrganizationPermissionMapping\UiOrganizationPermissionMappingRepository;
+use App\Repositories\UiOrganizationPermissionMapping\UiOrganizationPermissionMappingRepositoryInterface;
+use App\Repositories\UiModule\UiModuleRepository;
+use App\Repositories\UiModule\UiModuleRepositoryInterface;
 use App\Repositories\ActivityItem\ActivityItemRepository;
 use App\Repositories\ActivityItem\ActivityItemRepositoryInterface;
 use App\Repositories\ActivityLayout\ActivityLayoutRepositoryInterface;
@@ -22,8 +26,6 @@ use App\Repositories\DefaultSsoIntegrationSettings\DefaultSsoIntegrationSettings
 use App\Repositories\EloquentRepositoryInterface;
 use App\Repositories\GoogleClassroom\GoogleClassroomRepository;
 use App\Repositories\GoogleClassroom\GoogleClassroomRepositoryInterface;
-use App\Repositories\H5pElasticsearchField\H5pElasticsearchFieldRepository;
-use App\Repositories\H5pElasticsearchField\H5pElasticsearchFieldRepositoryInterface;
 use App\Repositories\H5pLibrary\H5pLibraryRepository;
 use App\Repositories\H5pLibrary\H5pLibraryRepositoryInterface;
 use App\Repositories\H5pContent\H5pContentRepository;
@@ -73,6 +75,12 @@ use App\Repositories\OrganizationPermissionType\OrganizationPermissionTypeReposi
 use App\Repositories\OrganizationPermissionType\OrganizationPermissionTypeRepositoryInterface;
 use App\Repositories\Subject\SubjectRepository;
 use App\Repositories\Subject\SubjectRepositoryInterface;
+use App\Repositories\OrganizationRoleType\OrganizationRoleTypeRepository;
+use App\Repositories\OrganizationRoleType\OrganizationRoleTypeRepositoryInterface;
+use App\Repositories\MicrosoftTeam\MicrosoftTeamRepositoryInterface;
+use App\Repositories\MicrosoftTeam\MicrosoftTeamRepository;
+use App\Repositories\MediaSources\MediaSourcesInterface;
+use App\Repositories\MediaSources\MediaSourcesRepository;
 
 class RepositoryServiceProvider extends ServiceProvider
 {
@@ -91,7 +99,6 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(ActivityTypeRepositoryInterface::class, ActivityTypeRepository::class);
         $this->app->bind(ActivityItemRepositoryInterface::class, ActivityItemRepository::class);
         $this->app->bind(LmsSettingRepositoryInterface::class, LmsSettingRepository::class);
-        $this->app->bind(H5pElasticsearchFieldRepositoryInterface::class, H5pElasticsearchFieldRepository::class);
         $this->app->bind(H5pLibraryRepositoryInterface::class, H5pLibraryRepository::class);
         $this->app->bind(H5pContentRepositoryInterface::class, H5pContentRepository::class);
         $this->app->bind(MetricsRepositoryInterface::class, MetricsRepository::class);
@@ -118,6 +125,11 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(AuthorTagRepositoryInterface::class, AuthorTagRepository::class);
         $this->app->bind(ActivityLayoutRepositoryInterface::class, ActivityLayoutRepository::class);
         $this->app->bind(IndependentActivityRepositoryInterface::class, IndependentActivityRepository::class);
+        $this->app->bind(UiOrganizationPermissionMappingRepositoryInterface::class, UiOrganizationPermissionMappingRepository::class);
+        $this->app->bind(UiModuleRepositoryInterface::class, UiModuleRepository::class);
+        $this->app->bind(OrganizationRoleTypeRepositoryInterface::class, OrganizationRoleTypeRepository::class);
+        $this->app->bind(MicrosoftTeamRepositoryInterface::class, MicrosoftTeamRepository::class);
+        $this->app->bind(MediaSourcesInterface::class, MediaSourcesRepository::class);
     }
 
     /**
