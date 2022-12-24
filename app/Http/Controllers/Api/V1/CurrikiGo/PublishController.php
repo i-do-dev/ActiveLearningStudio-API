@@ -28,6 +28,7 @@ use Illuminate\Http\Response;
 use App\CurrikiGo\Canvas\Course as CanvasCourse;
 use App\Http\Requests\V1\CurrikiGo\CreateAssignmentRequest;
 use App\Http\Requests\V1\CurrikiGo\PublishMoodlePlaylistRequest;
+use App\Http\Requests\V1\CurrikiGo\PublishWordpressPlaylistRequest;
 use Illuminate\Support\Facades\Gate;
 
 /**
@@ -370,7 +371,7 @@ class PublishController extends Controller
      * @param Playlist $playlist
      * @return Response
      */
-    public function playlistToWordPress(PublishPlaylistRequest $publishRequest, Project $project, Playlist $playlist)
+    public function playlistToWordPress(PublishWordpressPlaylistRequest $publishRequest, Project $project, Playlist $playlist)
     {
         if ($playlist->project_id !== $project->id) {
             return response([
