@@ -30,12 +30,18 @@ class Playlist
         $grade_name = $this->getActivityGrade($playlist->project_id, 'educationLevels');
         $subject_name = $this->getActivityGrade($playlist->project_id, 'subjects');
         
+        $playlistActivities = [];
+        foreach($playlist->activities->toArray() as $activity) {
+            $playlistActivities[] = ['id' => $activity["id"], 'title' => $activity["title"]];
+        }
+        $activities =  htmlentities(json_encode($playlistActivities)); 
+
         $web_service_token = $this->lmsSetting->lms_access_token;
         $lms_host = $this->lmsSetting->lms_url;
         $web_service_function = "local_curriki_moodle_plugin_create_playlist";
 
         $web_service_url = $lms_host . "/webservice/rest/server.php";
-        $rquest_params = [
+        $request_params = [
             "wstoken" => $web_service_token,
             "wsfunction" => $web_service_function, 
             "moodlewsrestformat" => "json",
@@ -48,9 +54,10 @@ class Playlist
             "tool_url" => config('constants.curriki-tsugi-host'),
             "org_name" => $organizationName,
             "grade_name" => $grade_name ? : "None",
-            "subject_name" => $subject_name ? : "None"
+            "subject_name" => $subject_name ? : "None",
+            "activities" => $activities
         ];
-        $response = $this->client->request('GET', $web_service_url, ['query' => $rquest_params]);
+        $response = $this->client->request('GET', $web_service_url, ['query' => $request_params]);
         return $response;
     }
 
