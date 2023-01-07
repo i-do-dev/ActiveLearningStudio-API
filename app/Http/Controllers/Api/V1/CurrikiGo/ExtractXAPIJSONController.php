@@ -189,7 +189,7 @@ class ExtractXAPIJSONController extends Controller
                     // Only fetching teacher_email_id of gclass_api_data column as in each respective case (LTI DL, Publishing from CS) email of publisher is already being stored
                     if ($glassAltCourseId) {
                         $publisherData = $googleClassroom->fetchPublisherData($glassAltCourseId);
-                        if ($publisherData) {
+                        if ($publisherData && isset($publisherData['publisherUser']) && isset($publishedData['curriki_teacher_org'])) {
                             $insertData['publisher_id'] = $publisherData['publisherUser']['id'];
                             $insertData['publisher_org_id'] = $publisherData['curriki_teacher_org'];
                         }
