@@ -12,6 +12,7 @@ use App\CurrikiGo\Moodle\Playlist as MoodlePlaylist;
 use App\CurrikiGo\WordPress\Course as WordPressCourse;
 use App\CurrikiGo\WordPress\Lesson as WordPressLesson;
 use App\CurrikiGo\WordPress\Tags as WordPressTags;
+use App\CurrikiGo\WordPress\Category as WordPressCategories;
 use App\CurrikiGo\SafariMontage\EasyUpload as SafariMontageEasyUpload;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\V1\CurrikiGo\PublishPlaylistRequest;
@@ -20,6 +21,7 @@ use App\Models\CurrikiGo\LmsSetting;
 use App\Models\Activity;
 use App\Models\Playlist;
 use App\Models\Project;
+use App\Models\Organization;
 use App\Repositories\CurrikiGo\LmsSetting\LmsSettingRepository;
 use App\Repositories\CurrikiGo\LmsSetting\LmsSettingRepositoryInterface;
 use App\Services\CurrikiGo\LMSIntegrationServiceInterface;
@@ -393,14 +395,23 @@ class PublishController extends Controller
             $tags = $response->getBody()->getContents();
             $tags = json_decode($tags);
             $tagsArray = $wpTag->returnIds($playlist ,$tags);
+            $wpTag = new WordPressCategories($lmsSetting,'course');
+            $organizationId = $playlist->project->organization_id;
+            $organizationTree = $wpTag->getOrganizationTree($organizationId);
+            $organizationTree = array_reverse($organizationTree);
+            $response = $wpTag->fetch($playlist);
+            $tags = $response->getBody()->getContents();
+            $tags = json_decode($tags);
+            $organization = Organization::find($organizationId);
+            $organizationWPId = $wpTag->syncOrganizations($organizationTree, $tags, $organization);
             if(empty($responseContent)){
-                $response = $course->send($playlist, $tagsArray);
+                $response = $course->send($playlist, $tagsArray, $organizationWPId );
                 $responseContent = $response->getBody()->getContents();
                 $responseContent = json_decode($responseContent);
                 $courseId = $responseContent->id;
             }else{
                 $courseId = $responseContent[0]->id;
-                $response = $course->update($playlist, $courseId, $tagsArray);
+                $response = $course->update($playlist, $courseId, $tagsArray, $organizationWPId );
                 $responseContent = $response->getBody()->getContents();
                 $responseContent = json_decode($responseContent);
             }
