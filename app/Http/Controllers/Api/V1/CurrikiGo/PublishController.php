@@ -403,15 +403,15 @@ class PublishController extends Controller
             $tags = $response->getBody()->getContents();
             $tags = json_decode($tags);
             $organization = Organization::find($organizationId);
-            $OrganizationWPId = $wpTag->syncOrganizations($organizationTree, $tags, $organization);
+            $organizationWPId = $wpTag->syncOrganizations($organizationTree, $tags, $organization);
             if(empty($responseContent)){
-                $response = $course->send($playlist, $tagsArray, $OrganizationWPId );
+                $response = $course->send($playlist, $tagsArray, $organizationWPId );
                 $responseContent = $response->getBody()->getContents();
                 $responseContent = json_decode($responseContent);
                 $courseId = $responseContent->id;
             }else{
                 $courseId = $responseContent[0]->id;
-                $response = $course->update($playlist, $courseId, $tagsArray, $OrganizationWPId );
+                $response = $course->update($playlist, $courseId, $tagsArray, $organizationWPId );
                 $responseContent = $response->getBody()->getContents();
                 $responseContent = json_decode($responseContent);
             }

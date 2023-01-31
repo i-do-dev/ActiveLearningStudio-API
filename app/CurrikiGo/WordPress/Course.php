@@ -17,7 +17,7 @@ class Course
         $this->lmsAuthToken = base64_encode($lmsSetting->lms_login_id . ":" . $lmsSetting->lms_access_token);
     }
 
-    public function send(PlaylistModel $playlist, $tagsArray, $categoryArray)
+    public function send(PlaylistModel $playlist, $tagsArray, $organizationWPId)
     {        
         $lmsHost = $this->lmsSetting->lms_url;
         $webServiceURL = $lmsHost . "/wp-json/wp/v2/tl_courses"; // web service endpoint
@@ -27,7 +27,7 @@ class Course
             "content" => $playlist->project->description,
             'meta' => array('lti_content_id' => $playlist->project->id),
             'tl_course_tag' =>  $tagsArray,
-            'tl_course_category' => $categoryArray
+            'tl_course_category' => $organizationWPId
         ];
         $response = $this->client->request('POST', $webServiceURL, [
         'headers' => [
@@ -38,7 +38,7 @@ class Course
         return $response;
     }
 
-    public function update(PlaylistModel $playlist, $courseId ,$tagsArray,  $OrganizationWPId)
+    public function update(PlaylistModel $playlist, $courseId ,$tagsArray,  $organizationWPId)
     {        
         $lmsHost = $this->lmsSetting->lms_url;
         $webServiceURL = $lmsHost . "/wp-json/wp/v2/tl_courses/" . $courseId;
@@ -48,7 +48,7 @@ class Course
             "content" => $playlist->project->description,
             'meta' => array('lti_content_id' => $playlist->project->id),
             'tl_course_tag' =>  $tagsArray,
-            'tl_course_category' => $OrganizationWPId
+            'tl_course_category' => $organizationWPId
         ];
         $response = $this->client->request('POST', $webServiceURL, [
         'headers' => [
